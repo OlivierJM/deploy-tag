@@ -7,26 +7,27 @@ token = ENV['GITLAB_TOKEN']
 @base_url = "https://gitlab.com/api/v4/projects/13905080"
 @auth = {'Authorization' => "Bearer #{token}"}
 
-# fetch the last release in gitlab (tag)
-def last_tag
-    tags_url = URI("#{@base_url}/repository/tags")
-    dep_response = Net::HTTP.get(tags_url, @auth)
-    convert = JSON.parse(dep_response)
-    convert.last["name"]
+
+def request_handler(url)
+    tags_url = URI("#{@base_url}/#{url}")
+    response = Net::HTTP.get(tags_url, @auth)
+    formatted_response = JSON.parse(response)
+    formatted_response
 end
 
-puts last_tag
+# fetch the last release in gitlab (tag)
+# this is then used to determine the tag name for the next production deployment
+def last_tag
+    tags = request_handler("repository/tags")
+    # here we are only interested in the last tag name
+    tags.last["name"]
+end
 
-labels = URI("#{@base_url}/labels")
-labels_response = Net::HTTP.get(labels, @auth)
-c = JSON.parse(labels_response)
-puts c.last
 
-# fetch all stories in current sprint that are marked as verified
+# fetch all stories that are marked as verified and are still open
 def verified_tickets
-    # GET /issues?labels=foo,bar
-    tickets = URI("#{@base_url}/issues?labels=foo,bar")
-    
+    tickets = request_handler("issues?labels=Staging::Verified&state=opened")
+    tickets
 end
 
 # create a tag and attempt to fill up using the fetch stories above
