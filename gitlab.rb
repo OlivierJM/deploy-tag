@@ -89,8 +89,10 @@ rescue => e
 end
 
 # after a successful creation of a tag, monitor if the deployment was successful, report back and close issues
-def close_tickets
-    # false
-end
+# def close_tickets
+    # get the most recent deployments or check one that was deployed today
+    # if it has a status == "success" then go ahead and close issues
+    # if it wasn't successful, no worries slack would've already notified
+# end
 
 create_tag
