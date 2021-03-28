@@ -45,14 +45,14 @@ def verified_tickets
 end
 
 # format ticket listing to how we are currently doing it in gitlab https://handbook.doublegdp.com/prod-eng/engineering/#deployment
-# returns a string of individual lines like this * #828 Add signature box on receipt https://gitlab.com/api/v4/projects/13905080/issues/828*
+# returns a string of individual lines like this * test 3 #3 @olivierjmm*
 # since gitlab might not properly intepret new lines, we can later in the flow replace "\n" with "  "
 # update👆🏾: changed to use both (double spaces and new line) to automatically format both messages and release_description
+# TODO: check stories that dont have assignees and report them
 def format_verified_tickets
     verified = verified_tickets
     message = verified.map do |ticket|
-        puts ticket["assignee"]
-        "- #{ticket["title"]} #{ticket["web_url"]} @#{ticket["assignee"]&.username}   \n"
+        "- #{ticket["title"]} #{ticket["web_url"]} @#{ticket["assignee"]["username"]}    \n"
     end
     message.join("")
 end
@@ -76,17 +76,17 @@ def create_tag
             request = Net::HTTP::Post.new(tag_post_url.path, 'Content-Type' => 'application/json')
             request['authorization'] = "Bearer #{@token}"
             request.body = {
-                tag_name: "1.0", # TODO: use calculated version of next_tag_name
+                tag_name: "1.3", # TODO: use calculated version of next_tag_name
                 ref: 'master',
                 # message and release_description are basically the same, we should discuss
                 message: message,
                 release_description: message
             }.to_json
             res = http.request(request)
-            if res.code == 201
+            if res.code <= "201"
                 puts "successfully created #{tag_name}, you can verify me here https://gitlab.com/doublegdp/app/-/tags "
             else
-                puts "The tag wasn't created for some reasons"
+                puts "The tag wasn't created"
             end
 
     end
