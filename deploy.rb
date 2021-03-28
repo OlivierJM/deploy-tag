@@ -51,7 +51,8 @@ end
 def format_verified_tickets
     verified = verified_tickets
     message = verified.map do |ticket|
-        "##{ticket["iid"].to_s} #{ticket["title"]} #{ticket["web_url"]}   \n"
+        puts ticket["assignee"]
+        "- #{ticket["title"]} #{ticket["web_url"]} @#{ticket["assignee"]&.username}   \n"
     end
     message.join("")
 end
@@ -75,16 +76,19 @@ def create_tag
             request = Net::HTTP::Post.new(tag_post_url.path, 'Content-Type' => 'application/json')
             request['authorization'] = "Bearer #{@token}"
             request.body = {
-                tag_name: "0.6", # TODO: use calculated version of next_tag_name
+                tag_name: "1.0", # TODO: use calculated version of next_tag_name
                 ref: 'master',
                 # message and release_description are basically the same, we should discuss
                 message: message,
                 release_description: message
             }.to_json
             res = http.request(request)
-            if res.code
+            if res.code == 201
                 puts "successfully created #{tag_name}, you can verify me here https://gitlab.com/doublegdp/app/-/tags "
+            else
+                puts "The tag wasn't created for some reasons"
             end
+
     end
 rescue => e
     puts "ooops  #{e}"
