@@ -17,9 +17,17 @@ end
 
 puts last_tag
 
-
+labels = URI("#{@base_url}/labels")
+labels_response = Net::HTTP.get(labels, @auth)
+c = JSON.parse(labels_response)
+puts c.last
 
 # fetch all stories in current sprint that are marked as verified
+def verified_tickets
+    # GET /issues?labels=foo,bar
+    tickets = URI("#{@base_url}/issues?labels=foo,bar")
+    
+end
 
 # create a tag and attempt to fill up using the fetch stories above
 
