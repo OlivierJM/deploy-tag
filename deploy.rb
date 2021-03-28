@@ -51,7 +51,7 @@ end
 def format_verified_tickets
     verified = verified_tickets
     message = verified.map do |ticket|
-        "##{ticket["iid"].to_s} #{ticket["title"]} #{ticket["_links"]["self"]}   \n"
+        "##{ticket["iid"].to_s} #{ticket["title"]} #{ticket["web_url"]}   \n"
     end
     message.join("")
 end
