@@ -1,10 +1,15 @@
 require 'net/http'
 require 'json'
 
+# This has been tested and can be verified here:
+#  - here https://gitlab.com/olivierjmm/gitlab-next-ci/-/releases
+#  - https://gitlab.com/olivierjmm/gitlab-next-ci/-/tags
+
 # get the env variables e.g: token
 # this needs to be set in the terminal like 
+# project_id = "13905080" # static id for platform project
 @token = ENV['GITLAB_TOKEN']
-@base_url = "https://gitlab.com/api/v4/projects/25486737" # static id for platform project
+@base_url = "https://gitlab.com/api/v4/projects/25486737" # testing with personal project
 @auth = {'Authorization' => "Bearer #{@token}"}
 
 
@@ -32,7 +37,7 @@ def next_tag_name
     last_tag
 end
 
-# fetch all stories that are marked as verified and are still open
+# fetch all stories that are marked as staging verified and are still open
 # we will close these issues when we are done
 def verified_tickets
     tickets = request_handler("issues?labels=Staging::Verified&state=opened")
@@ -40,14 +45,15 @@ def verified_tickets
 end
 
 # format ticket listing to how we are currently doing it in gitlab https://handbook.doublegdp.com/prod-eng/engineering/#deployment
-# returns a string of individual lines like this *828 https://gitlab.com/api/v4/projects/13905080/issues/828 Add signature box on receipt*
+# returns a string of individual lines like this * #828 Add signature box on receipt https://gitlab.com/api/v4/projects/13905080/issues/828*
 # since gitlab might not properly intepret new lines, we can later in the flow replace "\n" with "  "
+# update👆🏾: changed to use both (double spaces and new line) to automatically format both messages and release_description
 def format_verified_tickets
     verified = verified_tickets
-    f_m = verified.map do |ticket|
+    message = verified.map do |ticket|
         "##{ticket["iid"].to_s} #{ticket["title"]} #{ticket["_links"]["self"]}   \n"
     end
-    f_m.join("")
+    message.join("")
 end
 
 # create a tag and attempt to fill up using the fetch stories above
@@ -69,8 +75,9 @@ def create_tag
             request = Net::HTTP::Post.new(tag_post_url.path, 'Content-Type' => 'application/json')
             request['authorization'] = "Bearer #{@token}"
             request.body = {
-                tag_name: "0.2", # TODO: use calculated version of next_tag_name
+                tag_name: "0.3", # TODO: use calculated version of next_tag_name
                 ref: 'master',
+                # message and release_description are basically the same, we should discuss
                 message: message,
                 release_description: message
             }.to_json
@@ -79,6 +86,11 @@ def create_tag
     end
 rescue => e
     puts "ooops  #{e}"
+end
+
+# after a successful creation of a tag, monitor if the deployment was successful, report back and close issues
+def close_tickets
+    # false
 end
 
 create_tag
