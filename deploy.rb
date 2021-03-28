@@ -75,14 +75,16 @@ def create_tag
             request = Net::HTTP::Post.new(tag_post_url.path, 'Content-Type' => 'application/json')
             request['authorization'] = "Bearer #{@token}"
             request.body = {
-                tag_name: "0.3", # TODO: use calculated version of next_tag_name
+                tag_name: "0.6", # TODO: use calculated version of next_tag_name
                 ref: 'master',
                 # message and release_description are basically the same, we should discuss
                 message: message,
                 release_description: message
             }.to_json
             res = http.request(request)
-            puts "response #{res.body}"
+            if res.code
+                puts "successfully created #{tag_name}, you can verify me here https://gitlab.com/doublegdp/app/-/tags "
+            end
     end
 rescue => e
     puts "ooops  #{e}"
