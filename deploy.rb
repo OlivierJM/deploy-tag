@@ -58,10 +58,10 @@ end
 
 # create a tag and attempt to fill up using the fetch stories above
 # params needed for the tag  
-# @param tag_name name or count of the tag, we will get this from last_tag + 1 with some parsing
-# @param ref this is the name of the branch, this will be master
-# @param message we are currently using this as a list of all verified issues in staging
-# @param release_description currently we are building a markdown table with similar content as message above
+#  - tag_name name or count of the tag, we will get this from last_tag + 1 with some parsing  
+#  - ref this is the name of the branch, this will be master  
+#  - message we are currently using this as a list of all verified issues in staging  
+#  - release_description currently we are building a markdown table with similar content as message above  
 # *release_description* is optional and was apparently deprecated in gitlab v11.7 and will be removed in v14
 # current version is at v13.10
 # ref: https://handbook.doublegdp.com/prod-eng/engineering/#deployment
