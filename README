@@ -1,4 +1,4 @@
-Following a discussion from here https://doublegdp.slack.com/archives/CQLNFTC3F/p1616162661018800   
+a simple script to create a gitlab tag with all related issues and tag the assignees to those issues and produce a clean release note
 
 This project requires GITLAB_TOKEN="sometoken" in your environment variables
 
@@ -6,6 +6,5 @@ This has no extra dependencies and it only requires ruby to run
 `ruby deploy.rb`
 
 Todo: 
-- Could be a CLI or a rake task
-- Find better way of using environment variables
+- Make it a CLI or a rake task
 
