@@ -6,14 +6,13 @@ require 'json'
 #  - https://gitlab.com/olivierjmm/gitlab-next-ci/-/tags
 
 # get the env variables e.g: token
-# this needs to be set in the terminal like 
+# this needs to be set in the terminal like
 # project_id = "13905080" # static id for platform project
 @token = ENV['GITLAB_TOKEN']
-@base_url = "https://gitlab.com/api/v4/projects/25486737" # testing with personal project
-@auth = {'Authorization' => "Bearer #{@token}"}
+@base_url = 'https://gitlab.com/api/v4/projects/25486737' # testing with personal project
+@auth = { 'Authorization' => "Bearer #{@token}" }
 
-
-# reusable get request handler 
+# reusable get request handler
 def request_handler(url)
     tags_url = URI("#{@base_url}/#{url}")
     response = Net::HTTP.get(tags_url, @auth)
@@ -29,18 +28,16 @@ def last_tag
     tags.last["name"]
 end
 
-# get current tag name, convert it to a float, add one and return it back as a string
-# TODO: => ruby is crazy with numbers such as "0.90" it returns 0.9, we could change our way of counting
-# from 0 - 100 to be 0-10
+# get current tag number and increment it by one
 def next_tag_name
     # do calculations as above and return new string
-    last_tag
+    Integer(last_tag) + 1
 end
 
 # fetch all stories that are marked as staging verified and are still open
 # we will close these issues when we are done
 def verified_tickets
-    tickets = request_handler("issues?labels=Staging::Verified&state=opened")
+    tickets = request_handler('issues?labels=Staging::Verified&state=opened')
     tickets
 end
 
@@ -52,17 +49,17 @@ end
 def format_verified_tickets
     verified = verified_tickets
     message = verified.map do |ticket|
-        "- #{ticket["title"]} #{ticket["web_url"]} @#{ticket["assignee"]["username"]}    \n"
+       "- #{ticket['title']} #{ticket['web_url']} @#{ticket['assignee']['username']}    \n"
     end
-    message.join("")
+    message.join('')
 end
 
 # create a tag and attempt to fill up using the fetch stories above
-# params needed for the tag  
-#  - tag_name name or count of the tag, we will get this from last_tag + 1 with some parsing  
-#  - ref this is the name of the branch, this will be master  
-#  - message we are currently using this as a list of all verified issues in staging  
-#  - release_description currently we are building a markdown table with similar content as message above  
+# params needed for the tag
+#  - tag_name name or count of the tag, we will get this from last_tag + 1 with some parsing
+#  - ref this is the name of the branch, this will be master
+#  - message we are currently using this as a list of all verified issues in staging
+#  - release_description currently we are building a markdown table with similar content as message above
 # *release_description* is optional and was apparently deprecated in gitlab v11.7 and will be removed in v14
 # current version is at v13.10
 # ref: https://handbook.doublegdp.com/prod-eng/engineering/#deployment
@@ -76,7 +73,7 @@ def create_tag
             request = Net::HTTP::Post.new(tag_post_url.path, 'Content-Type' => 'application/json')
             request['authorization'] = "Bearer #{@token}"
             request.body = {
-                tag_name: "1.3", # TODO: use calculated version of next_tag_name
+                tag_name: tag_name, # TODO: use calculated version of next_tag_name
                 ref: 'master',
                 # message and release_description are basically the same, we should discuss
                 message: message,
@@ -88,17 +85,16 @@ def create_tag
             else
                 puts "The tag wasn't created"
             end
-
     end
 rescue => e
-    puts "ooops  #{e}"
+   puts "ooops  #{e}"
 end
 
 # after a successful creation of a tag, monitor if the deployment was successful, report back and close issues
 # def close_tickets
-    # get the most recent deployments or check one that was deployed today
-    # if it has a status == "success" then go ahead and close issues
-    # if it wasn't successful, no worries slack would've already notified
+# get the most recent deployments or check one that was deployed today
+# if it has a status == "success" then go ahead and close issues
+# if it wasn't successful, no worries slack would've already notified
 # end
 
 create_tag
